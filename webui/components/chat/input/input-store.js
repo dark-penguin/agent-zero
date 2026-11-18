@@ -411,12 +411,22 @@ const model = {
 
     if ($event.key === "Enter") {
       if (this._isInCodeBlock($event.target)) return;
-      if (!$event.shiftKey) {
-        if (this._tryCreateCodeBlock($event)) return;
-        $event.preventDefault();
-        this.sendMessage();
+
+      // Shift+Enter always inserts a newline (browser default)
+      if ($event.shiftKey) return;
+
+      // Try to create a code block (works on all devices)
+      if (this._tryCreateCodeBlock($event)) return;
+
+      // On touch devices (mobile), Enter inserts a newline instead of sending
+      const isTouchDevice = navigator.maxTouchPoints > 0 || window.matchMedia('(pointer: coarse)').matches;
+      if (isTouchDevice) {
+        return; // Allow browser default behavior (insert newline)
       }
-      return;
+
+      // Desktop: Send message
+      $event.preventDefault();
+      this.sendMessage();
     }
 
     if ($event.key === "ArrowUp") this.historyPrev($event);
